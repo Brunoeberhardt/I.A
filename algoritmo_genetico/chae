@@ -1,0 +1,90 @@
+// Tamanho da população e número máximo de gerações
+var POPULATION_SIZE = 100;
+var MAX_GENERATIONS = 1000;
+
+// Lista de caracteres que podem ser usados para criar as strings
+var CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
+// Função para gerar uma string aleatória
+function generateRandomString(length) {
+  var result = "";
+  for (var i = 0; i < length; i++) {
+    result += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+  }
+  return result;
+}
+
+// Classe para representar um indivíduo na população
+class Individual {
+  constructor(string) {
+    this.string = string;
+    this.fitness = this.calculateFitness();
+  }
+
+  // Calcula a aptidão do indivíduo
+  calculateFitness() {
+    var score = 0;
+    for (var i = 0; i < this.string.length; i++) {
+      if (this.string.charAt(i) == "HELLO WORLD".charAt(i)) {
+        score++;
+      }
+    }
+    return score / "HELLO WORLD".length;
+  }
+
+  // Cria um filho a partir deste indivíduo e outro pai
+  createChild(otherParent) {
+    var midpoint = Math.floor(Math.random() * this.string.length);
+    var childString = this.string.substr(0, midpoint) + otherParent.string.substr(midpoint);
+    return new Individual(childString);
+  }
+
+  // Adiciona alguma mutação aleatória a este indivíduo
+  mutate() {
+    var index = Math.floor(Math.random() * this.string.length);
+    var newChar = CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+    this.string = this.string.substr(0, index) + newChar + this.string.substr(index + 1);
+  }
+}
+
+// Classe para representar a população
+class Population {
+  constructor() {
+    this.individuals = [];
+    for (var i = 0; i < POPULATION_SIZE; i++) {
+      this.individuals.push(new Individual(generateRandomString(11)));
+    }
+  }
+
+  // Seleciona dois pais aleatórios para criar um filho
+  selectParents() {
+    var parent1 = this.individuals[Math.floor(Math.random() * POPULATION_SIZE)];
+    var parent2 = this.individuals[Math.floor(Math.random() * POPULATION_SIZE)];
+    return [parent1, parent2];
+  }
+
+  // Cria uma nova geração a partir dos indivíduos desta geração
+  createNextGeneration() {
+    var newGeneration = [];
+    for (var i = 0; i < POPULATION_SIZE; i++) {
+      var [parent1, parent2] = this.selectParents();
+      var child = parent1.createChild(parent2);
+      if (Math.random() < 0.1) {
+        child.mutate();
+      }
+      newGeneration.push(child);
+    }
+    this.individuals = newGeneration;
+  }
+
+  // Retorna o indivíduo mais apto desta população
+  getFittest() {
+    var fittest = this.individuals[0];
+    for (var i = 1; i < POPULATION_SIZE; i++) {
+      if (this.individuals[i].fitness > fittest.fitness) {
+        fittest = this.individuals[i];
+      }
+    }
+    return fittest;
+  }
+}
